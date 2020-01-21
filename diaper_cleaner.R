@@ -37,7 +37,7 @@ poop %>%
   ggplot(aes(x = date, y = count)) +
   geom_line() +
   geom_hline(yintercept = poop_mean, linetype="dashed") +
-  labs(title = 'Poo')
+  labs(title = 'Poopy diapers')
 
 pee <- diapers %>% filter(urine == 1) %>% 
   group_by(date) %>% 
@@ -48,7 +48,7 @@ pee_mean <- mean(pee$count)
 pee %>% 
   ggplot(aes(x = date, y = count)) +
   geom_line() +
-  geom_hline(yintercept = poop_mean, linetype="dashed") +
+  geom_hline(yintercept = pee_mean, linetype="dashed") +
   labs(title = 'Pee')
 
  diapers_summary %>% 

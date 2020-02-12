@@ -36,6 +36,8 @@ feeding[is.na(feeding)] <- 0
 
 # todo; break it up per week
 feeding %>% 
+  mutate(date = ymd(date)) %>%
+  filter(date > '2020-01-01') %>% 
   ggplot(aes(x = hour_am_pm)) +
   geom_histogram(stat_bin = 30, stat = "count") +
   scale_x_discrete(limits=c(
@@ -47,6 +49,7 @@ feeding %>%
   labs(x = 'Hour of the day')
 
 feeding %>% 
+  filter(date > '2020-01-01') %>%
   ggplot(aes(x = hour_am_pm)) +
     geom_histogram(stat_bin = 30, stat = "count") +
     scale_x_discrete(limits=c(

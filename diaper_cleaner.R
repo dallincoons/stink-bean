@@ -49,7 +49,7 @@ pee %>%
   ggplot(aes(x = date, y = count)) +
   geom_line() +
   geom_hline(yintercept = pee_mean, linetype="dashed") +
-  labs(title = 'Pee')
+  labs(title = 'Pee Diapers')
 
  diapers_summary %>% 
   ggplot(aes(x = date, y = count)) +

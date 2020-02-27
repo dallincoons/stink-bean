@@ -2,6 +2,7 @@ pacman::p_load(tidyverse, lubridate, ggplot2)
 
 createSleepingDataset <- function() {
   sleeping <- read_csv('raw_data/sleeping.csv') %>% 
+    mutate(start_time_am_pm = paste(crib_start, start_am_pm)) %>% 
     mutate(start_time_am_pm = paste(start, start_am_pm)) %>% 
     mutate(end_time_am_pm = paste(end, end_am_pm)) %>% 
     mutate(hour = hour(start)) %>% 
@@ -23,10 +24,30 @@ createSleepingDataset <- function() {
 
 sleeping <- createSleepingDataset()
 
-total_sleep_by_date <- sleeping %>% 
+crib <- sleeping %>% 
+  filter(!is.na(crib_start)) %>% 
+  mutate(in_crib_am_pm = paste(crib_start, start_am_pm)) %>%
+  # mutate(
+  #   mil_crib_time = format(strptime(in_crib_am_pm, "%I:%M %p"), "%H:%M:%S"),
+  #   mil_start_time = format(strptime(start_time_am_pm, "%I:%M:%S %p"), "%H:%M:%S")
+  # ) %>% 
+  mutate(in_crib = (as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="")) - (as.POSIXct(strptime(in_crib_am_pm, "%I:%M:%S %p"), tz=""))) %>% 
+  mutate(
+    in_crib = case_when(
+      in_crib < 0 ~ 720 + in_crib,
+      TRUE ~ in_crib
+    )  
+  ) %>% 
+  mutate(in_crib = as.integer(in_crib) / 60)
+
+crib %>% 
   group_by(date) %>% 
-  arrange(desc(date)) %>% 
-  summarize(total_sleep = abs(sum(duration)) / 60)
+  arrange(date) %>% 
+  summarize(total_crib = sum(in_crib)) %>% 
+    ggplot() +
+    geom_line(aes(x = date, y = total_crib, color = 'total_sleep'), size = 1.1) +
+    labs(y = "Hours in crib before sleep") +
+    guides(color=FALSE)
 
 max_sleep <- sleeping %>% 
   group_by(date) %>% 
@@ -56,6 +77,14 @@ sleeping %>%
 
 sleeping %>% 
   group_by(date) %>% 
+  arrange(desc(date)) %>% 
+  summarize(total_crib = abs(sum(in_crib, na.rm=T)) / 60) %>% 
+  ggplot() +
+  geom_line(aes(x = date, y = total_crib, color = 'total_crib'), size = 1.1) +
+  theme_minimal()
+
+sleeping %>% 
+  group_by(date) %>% 
   summarize(total_sleep = abs(sum(duration)) / 60) %>% 
   arrange(date) %>% 
   ggplot() +
@@ -65,4 +94,6 @@ sleeping %>%
   scale_color_manual(values = c("skyblue")) +
   guides(color=FALSE) +
   geom_hline(yintercept = mean_sleep, linetype="dashed")
+
+
 

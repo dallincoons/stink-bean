@@ -49,13 +49,13 @@ crib <- sleeping %>%
   filter(!is.na(crib_start)) %>%
   mutate(in_crib_am_pm = paste(crib_start, start_am_pm)) %>%
   mutate(in_crib = (as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="")) - (as.POSIXct(strptime(in_crib_am_pm, "%I:%M:%S %p"), tz=""))) %>% 
+  mutate(in_crib = as.integer(in_crib) / 60) %>% 
   mutate(
     in_crib = case_when(
       in_crib < 0 ~ 720 + in_crib,
       TRUE ~ in_crib
-    )  
-  ) %>% 
-  mutate(in_crib = as.integer(in_crib) / 60)
+    )
+  )
 
 crib %>% 
   filter(as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="") > as.POSIXct(strptime('06:00:00 AM', "%I:%M:%S %p"), tz="")) %>% 
@@ -69,7 +69,7 @@ crib %>%
   arrange(date) %>% 
   summarize(total_crib = sum(in_crib)) %>% 
     ggplot() +
-    geom_line(aes(x = date, y = total_crib, color = 'total_sleep'), size = 1.1) +
+    geom_line(aes(x = date, y = (total_crib / 60), color = 'total_sleep'), size = 1.1) +
     labs(y = "Hours in crib before sleep") +
     guides(color=FALSE)
 
@@ -99,13 +99,13 @@ sleeping %>%
   filter(wake_up_hour <= 15) %>% 
   table()
 
-sleeping %>% 
-  group_by(date) %>% 
-  arrange(desc(date)) %>% 
-  summarize(total_crib = abs(sum(in_crib, na.rm=T)) / 60) %>% 
-  ggplot() +
-  geom_line(aes(x = date, y = total_crib, color = 'total_crib'), size = 1.1) +
-  theme_minimal()
+# crib %>% 
+#   group_by(date) %>% 
+#   arrange(desc(date)) %>% 
+#   summarize(total_crib = abs(sum(in_crib, na.rm=T)) / 60) %>% 
+#   ggplot() +
+#   geom_line(aes(x = date, y = total_crib, color = 'total_crib'), size = 1.1) +
+#   theme_minimal()
 
 sleeping %>% 
   group_by(date) %>% 

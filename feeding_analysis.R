@@ -49,7 +49,7 @@ feeding %>%
   labs(x = 'Hour of the day')
 
 feeding %>% 
-  filter(date > '2020-01-01') %>%
+  filter(date > '2020-02-01') %>%
   ggplot(aes(x = hour_am_pm)) +
     geom_histogram(stat_bin = 30, stat = "count") +
     scale_x_discrete(limits=c(

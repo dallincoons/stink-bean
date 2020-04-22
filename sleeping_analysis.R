@@ -87,7 +87,6 @@ ggplot() +
   labs(y = "Max sleep") +
   guides(color=FALSE) +
   geom_hline(yintercept = max_sleep_mean, linetype="dashed")
-  
 
 mean_sleep <- as.numeric(mean(total_sleep_by_date$total_sleep))
 
@@ -120,4 +119,23 @@ sleeping %>%
   geom_hline(yintercept = mean_sleep, linetype="dashed")
 
 
-
+sleeping %>% 
+  filter(date > "2019-12-10") %>% 
+  group_by(date) %>% 
+  mutate(id = as.numeric(date)) %>%
+  ungroup() %>% 
+  mutate(group = case_when(
+    as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="") < as.POSIXct(strptime("06:00:00 AM", "%I:%M:%S %p"), tz="") ~ id - 1,
+    T ~ id
+  )) %>%
+  group_by(group) %>%
+  select(start_time_am_pm, id, group, duration, date) %>% 
+  arrange(group) %>% 
+  summarize(total_sleep = abs(sum(duration)) / 60, date = first(date)) %>%
+  ggplot() +
+  geom_line(aes(x = date, y = total_sleep, color = 'total_sleep'), size = 1.1) +
+  theme_minimal() +
+  labs(y = "Sleep hours") +
+  scale_color_manual(values = c("skyblue")) +
+  guides(color=FALSE) +
+  geom_hline(yintercept = mean_sleep, linetype="dashed")

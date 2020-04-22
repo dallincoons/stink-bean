@@ -133,3 +133,10 @@ feeding_summary %>%
   geom_line(aes(x = date, y = duration_sum)) +
   geom_hline(yintercept = mean_duration, linetype="dashed")
  
+
+feeding %>% 
+  filter(side == 'F') %>% 
+  group_by(date) %>% 
+  summarize(total_oz = sum(fluid_oz)) %>% 
+ggplot() +
+  geom_line(aes(x = date, y = total_oz))

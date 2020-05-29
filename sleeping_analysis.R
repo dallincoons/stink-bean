@@ -118,6 +118,23 @@ sleeping %>%
   guides(color=FALSE) +
   geom_hline(yintercept = mean_sleep, linetype="dashed")
 
+sleeping %>%
+  filter(date > "2020-02-1") %>%
+  group_by(date) %>%
+  mutate(id = as.numeric(date)) %>%
+  ungroup() %>%
+  mutate(group = case_when(
+    as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="") < as.POSIXct(strptime("06:00:00 AM", "%I:%M:%S %p"), tz="") ~ id - 1,
+    T ~ id
+  )) %>%
+  group_by(group) %>%
+  select(start_time_am_pm, id, group, duration, date) %>%
+  arrange(group) %>%
+  filter(as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="") < as.POSIXct(strptime("06:00:00 AM", "%I:%M:%S %p"), tz="") | as.POSIXct(strptime(start_time_am_pm, "%I:%M:%S %p"), tz="") > as.POSIXct(strptime("06:00:00 PM", "%I:%M:%S %p"), tz="")) %>%
+  summarize(total_sleep = abs(sum(duration)) / 60, date = first(date)) %>%
+  ggplot() +
+  geom_boxplot(aes(y = total_sleep))
+
 
 sleeping %>% 
   filter(date > "2019-12-10") %>% 
